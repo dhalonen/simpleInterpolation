@@ -12,3 +12,5 @@ Please refer to the unit tests. The chart below is used to support test cases.
 Build instructions:<p>
 &nbsp;&nbsp;&nbsp;&nbsp;```g++ -std=c++11 simpleInterpolationTest.cpp```<p>
 Successfully built and tested on Mac OSX, Raspberry Pi
+
+Elaboration: https://davidhalonen.wordpress.com/2017/03/17/simple-tools-interpolation/
