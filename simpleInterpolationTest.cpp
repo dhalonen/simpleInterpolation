@@ -41,6 +41,7 @@ TEST_CASE( "First test" )
     REQUIRE( graphDataIntrp.getY( 0.0 ) == Approx( 0.8 ).epsilon(0.01) );
     REQUIRE( graphDataIntrp.getY( 6 ) == Approx( 2.25 ).epsilon(0.01) );
     REQUIRE( graphDataIntrp.getY( 3.75 ) == Approx( 0.5 ).epsilon(0.01) );
+    REQUIRE(graphDataIntrp.getY(3.0) == Approx(2.0).epsilon(0.01));
 
     std::shared_ptr< std::vector< std::pair< long double, long double > > > longDouble ( new std::vector< std::pair< long double, long double > > ( { {1.0,9.1}, {2.0,8.2}, {3.0,7.3}, {4.0,6.4}, {5.0,5.5}, {6.0,4.6}, {7.0,3.7}, {8.0,2.8}, {9.0,1.9} }));
     simpleTools::interpolation <long double, long double> ldIntrp( longDouble );
