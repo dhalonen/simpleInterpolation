@@ -38,7 +38,7 @@ namespace simpleTools
             //If less then 2 pairs, then nothing can be done.
             if( intrpData->size() < 2 ) return nan( "NAN" );
 
-            X leftX, leftY, rightX = nan( "NAN" ), rightY;  //rightX assignment is to provide check later
+            X leftX, leftY, rightX, rightY;
             auto head = intrpData->begin();
             auto end = intrpData->end();
             if( head == end ) return nan( "NAN" );  //empty vector
@@ -54,6 +54,10 @@ namespace simpleTools
                 rightY = head->second;
                 return interpolateOnSegment( x, leftX, leftY, rightX, rightY );
             }
+
+            auto next = ++head;
+            rightX = next->first;
+            rightY = next->second;
 
             //scan pairs to determine where the desired point lies between
             for( std::pair< X, Y >&item : *intrpData ){
@@ -72,7 +76,7 @@ namespace simpleTools
 
             //if rightX <  x, then the interpolation point is to the right of the table.
             //compute y = mx + b, using the last two pairs to determine that equation
-            if( std::isnan( rightX )){
+            if( x > rightX ) {
                 //perform a reverse iteration.
                 auto rhead = intrpData->rbegin();
                 rightX = rhead->first;
