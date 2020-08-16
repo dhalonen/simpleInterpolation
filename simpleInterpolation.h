@@ -30,15 +30,16 @@ namespace simpleTools
     template <class X, class Y>
     class interpolation {
     public:
-        interpolation( std::shared_ptr< std::vector< std::pair< X, X > > >a ): intrpData( a ) {};
+        interpolation( std::shared_ptr< std::vector< std::pair< X, Y > > >a ): intrpData( a ) {};
 
         //given interpolation point, x, compute it's corresponding y value
-        X getY( X x )
+        Y getY( X x )
         {
             //If less then 2 pairs, then nothing can be done.
             if( intrpData->size() < 2 ) return nan( "NAN" );
 
-            X leftX, leftY, rightX, rightY;
+            X leftX, leftY;
+            Y rightX, rightY;
             auto head = intrpData->begin();
             auto end = intrpData->end();
             if( head == end ) return nan( "NAN" );  //empty vector
@@ -63,7 +64,7 @@ namespace simpleTools
             for( std::pair< X, Y >&item : *intrpData ){
                 if( x == leftX ) return leftY;
                 if( x == rightX ) return rightY;
-                
+
                 if( item.first > x ){    //we have the rhs
                     rightX = item.first;
                     rightY = item.second;
@@ -92,39 +93,39 @@ namespace simpleTools
         }
 
     private:
-        std::shared_ptr< std::vector< std::pair< X, X > > > intrpData;
+        std::shared_ptr< std::vector< std::pair< X, Y > > > intrpData;
 
-        X interpolate( X x, X leftX, X leftY, X rightX, X rightY )
+        Y interpolate( X x, X leftX, Y leftY, X rightX, Y rightY )
         {
-            X slope = computeSlope( leftX, leftY, rightX, rightY );
+            Y slope = computeSlope( leftX, leftY, rightX, rightY );
             if( std::isnan( slope )) return slope;
 
             std::feclearexcept(FE_ALL_EXCEPT);
-            X result = leftY + (x - leftX) * slope;
+            Y result = leftY + (x - leftX) * slope;
             if(std::fetestexcept(FE_OVERFLOW)) return nan( "NAN" ); 
 
             return result; 
         };
 
-        X interpolateOnSegment( X x, X leftX, X leftY, X rightX, X rightY )
+        Y interpolateOnSegment( X x, X leftX, X leftY, Y rightX, Y rightY )
         {   // y = mx + b
-            X m = computeSlope( leftX, leftY, rightX, rightY );
+            Y m = computeSlope( leftX, leftY, rightX, rightY );
             if( std::isnan( m )) return m;
-            X b = leftY - m * leftX;
+            Y b = leftY - m * leftX;
 
             std::feclearexcept(FE_ALL_EXCEPT);
-            X result = m * x + b;
+            Y result = m * x + b;
             if(std::fetestexcept(FE_OVERFLOW)) return nan( "NAN" ); 
 
             return result; 
         };
 
-        X computeSlope( X leftX, X leftY, X rightX, X rightY )
+        Y computeSlope( X leftX, X leftY, Y rightX, Y rightY )
         {
-            X denominator = rightX - leftX; 
+            Y denominator = rightX - leftX;
 
             std::feclearexcept(FE_ALL_EXCEPT);
-            X result = ( rightY - leftY ) / denominator;
+            Y result = ( rightY - leftY ) / denominator;
             if(std::fetestexcept(FE_DIVBYZERO)) return nan( "NAN" ); 
 
             return result; 

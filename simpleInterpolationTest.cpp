@@ -54,12 +54,26 @@ TEST_CASE( "First test" )
     std::shared_ptr< std::vector< std::pair< double, double > > > emptyData( new std::vector< std::pair< double, double > > ({}));   //empty vector check
     simpleTools::interpolation <double, double> emptyIntrp( emptyData );
     REQUIRE( std::isnan( emptyIntrp.getY( 100 )));
-    
+
     emptyData->push_back( {1.0, 1.0} );    //cannot work with 1 pair of data
     simpleTools::interpolation <double, double> singlePair( emptyIntrp );
     REQUIRE(std::isnan( singlePair.getY( 100 )));
-    
+
     std::shared_ptr< std::vector< std::pair< double, double > > > zeroData ( new std::vector< std::pair< double, double > > ( { {0, 0}, {0, 0} }));   //return nan when divide by zero
     simpleTools::interpolation <double, double> zeroIntrp( zeroData );
     REQUIRE( std::isnan( zeroIntrp.getY( 1000 )));
+}
+
+TEST_CASE( "Dis-similar test" )
+{
+    std::shared_ptr< std::vector< std::pair< int, double > > > disData ( new std::vector< std::pair< int, double > >
+            ({
+                {1, 1.0},
+                {3, 2.0},
+                {5, 1.75},
+            }));
+    simpleTools::interpolation <int, double> disDataIntrp( disData  );
+    REQUIRE( disDataIntrp.getY( 2 ) == Approx( 1.5 ).epsilon(0.01) );
+    REQUIRE( disDataIntrp.getY( 4 ) == Approx( 1.875 ).epsilon(0.01) );
+    REQUIRE( disDataIntrp.getY( 6 ) == Approx( 1.625 ).epsilon(0.01) );
 }
