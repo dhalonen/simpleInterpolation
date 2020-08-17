@@ -32,6 +32,19 @@ namespace simpleTools
     public:
         explicit interpolation( std::shared_ptr< std::vector< std::pair< X, Y > > >a ): intrpData( a ) {};
 
+        //The simplest interpolation is to return the closest Y to a given X.
+        Y nearestY( X x )
+        {
+            if( preflightFailed() ) return nan( "NAN" );
+
+            //if leftX > x, then leftX is the closest
+            if( leftX > x )
+            {
+                return leftY;
+            }
+
+        }
+
         //given interpolation point, x, compute it's corresponding y value
         Y getY( X x )
         {
