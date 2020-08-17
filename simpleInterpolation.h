@@ -37,8 +37,6 @@ namespace simpleTools
         {
             if( preflightFailed() ) return nan( "NAN" );
 
-            X leftX, leftY;
-            Y rightX, rightY;
             auto head = intrpData->begin();
             leftX = head->first;                    //start from left side of graph or top of table
             leftY = head->second;
@@ -49,7 +47,7 @@ namespace simpleTools
                 ++head;
                 rightX = head->first;
                 rightY = head->second;
-                return interpolateOnSegment( x, leftX, leftY, rightX, rightY );
+                return interpolateOnSegment( x );
             }
 
             auto next = ++head;
@@ -81,15 +79,17 @@ namespace simpleTools
                 ++rhead;
                 leftX = rhead->first;
                 leftY = rhead->second;
-                return interpolateOnSegment( x, leftX, leftY, rightX, rightY );
+                return interpolateOnSegment( x );
             }
 
             //simply perform linear interpolation between two points
-            return interpolate( x, leftX, leftY, rightX, rightY );
+            return interpolate( x );
         }
 
     private:
         std::shared_ptr< std::vector< std::pair< X, Y > > > intrpData;
+        X leftX, leftY; //current left data point
+        Y rightX, rightY; //next adjacent data point
 
         bool preflightFailed()
         {
@@ -103,9 +103,9 @@ namespace simpleTools
             return false;
         }
 
-        Y interpolate( X x, X leftX, Y leftY, X rightX, Y rightY )
+        Y interpolate( X x)
         {
-            Y slope = computeSlope( leftX, leftY, rightX, rightY );
+            Y slope = computeSlope();
             if( std::isnan( slope )) return slope;
 
             std::feclearexcept(FE_ALL_EXCEPT);
@@ -115,9 +115,9 @@ namespace simpleTools
             return result; 
         };
 
-        Y interpolateOnSegment( X x, X leftX, X leftY, Y rightX, Y rightY )
+        Y interpolateOnSegment( X x)
         {   // y = mx + b
-            Y m = computeSlope( leftX, leftY, rightX, rightY );
+            Y m = computeSlope();
             if( std::isnan( m )) return m;
             Y b = leftY - m * leftX;
 
@@ -128,7 +128,7 @@ namespace simpleTools
             return result; 
         };
 
-        Y computeSlope( X leftX, X leftY, Y rightX, Y rightY )
+        Y computeSlope()
         {
             Y denominator = rightX - leftX;
 
