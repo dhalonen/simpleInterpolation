@@ -30,7 +30,7 @@ namespace simpleTools
     template <class X, class Y>
     class interpolation {
     public:
-        interpolation( std::shared_ptr< std::vector< std::pair< X, Y > > >a ): intrpData( a ) {};
+        explicit interpolation( std::shared_ptr< std::vector< std::pair< X, Y > > >a ): intrpData( a ) {};
 
         //given interpolation point, x, compute it's corresponding y value
         Y getY( X x )
@@ -131,4 +131,4 @@ namespace simpleTools
             return result; 
         }
     };
-};
+}
