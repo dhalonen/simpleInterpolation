@@ -37,10 +37,6 @@ namespace simpleTools
         {
             if( preflightFailed() ) return nan( "NAN" );
 
-            auto head = intrpData->begin();
-            leftX = head->first;                    //start from left side of graph or top of table
-            leftY = head->second;
-
             //if leftX > x, then the interpolation point is to the left of the table.
             //compute y = mx + b, using the 1st two pairs to determine that equation
             if( leftX > x ){
@@ -90,15 +86,20 @@ namespace simpleTools
         std::shared_ptr< std::vector< std::pair< X, Y > > > intrpData;
         X leftX, leftY; //current left data point
         Y rightX, rightY; //next adjacent data point
+        typename std::vector< std::pair< X, Y >>::iterator head;
 
         bool preflightFailed()
         {
             //If less then 2 pairs, then nothing can be done.
             if( intrpData->size() < 2 ) return true;
 
-            auto head = intrpData->begin();
+            head = intrpData->begin();
             auto end = intrpData->end();
             if( head == end ) return true;  //empty vector
+
+            head = intrpData->begin();
+            leftX = head->first;                    //start from left side of graph or top of table
+            leftY = head->second;
 
             return false;
         }
