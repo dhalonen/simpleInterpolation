@@ -59,23 +59,10 @@ namespace simpleTools
                 return interpolateOnSegment( x );
             }
 
-            auto next = ++head;
-            rightX = next->first;
-            rightY = next->second;
-
-            //scan pairs to determine where the desired point lies between
-            for( std::pair< X, Y >&item : *intrpData ){
-                if( x == leftX ) return leftY;
-                if( x == rightX ) return rightY;
-
-                if( item.first > x ){    //we have the rhs
-                    rightX = item.first;
-                    rightY = item.second;
-                    break;
-                } else {
-                    leftX = item.first;
-                    leftY = item.second;
-                }
+            std::tuple< bool, Y> scanResult = scanVector( x );
+            if( std::get<0>(scanResult))
+            {
+                return std::get<1>(scanResult);
             }
 
             //if rightX <  x, then the interpolation point is to the right of the table.
@@ -115,6 +102,29 @@ namespace simpleTools
             leftY = head->second;
 
             return false;
+        }
+
+        std::tuple< bool, Y> scanVector( X x )
+        {
+            auto next = ++head;
+            rightX = next->first;
+            rightY = next->second;
+
+            //scan pairs to determine where the desired point lies between
+            for( std::pair< X, Y >&item : *intrpData ){
+                if( x == leftX ) return std::make_tuple( true, leftY );
+                if( x == rightX ) return std::make_tuple( true, rightY );
+
+                if( item.first > x ){    //we have the rhs
+                    rightX = item.first;
+                    rightY = item.second;
+                    break;
+                } else {
+                    leftX = item.first;
+                    leftY = item.second;
+                }
+            }
+            return std::make_tuple( false, nan( "NAN" ) );
         }
 
         Y interpolate( X x)
