@@ -35,15 +35,11 @@ namespace simpleTools
         //given interpolation point, x, compute it's corresponding y value
         Y getY( X x )
         {
-            //If less then 2 pairs, then nothing can be done.
-            if( intrpData->size() < 2 ) return nan( "NAN" );
+            if( preflightFailed() ) return nan( "NAN" );
 
             X leftX, leftY;
             Y rightX, rightY;
             auto head = intrpData->begin();
-            auto end = intrpData->end();
-            if( head == end ) return nan( "NAN" );  //empty vector
-
             leftX = head->first;                    //start from left side of graph or top of table
             leftY = head->second;
 
@@ -94,6 +90,18 @@ namespace simpleTools
 
     private:
         std::shared_ptr< std::vector< std::pair< X, Y > > > intrpData;
+
+        bool preflightFailed()
+        {
+            //If less then 2 pairs, then nothing can be done.
+            if( intrpData->size() < 2 ) return true;
+
+            auto head = intrpData->begin();
+            auto end = intrpData->end();
+            if( head == end ) return true;  //empty vector
+
+            return false;
+        }
 
         Y interpolate( X x, X leftX, Y leftY, X rightX, Y rightY )
         {
