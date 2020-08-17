@@ -22,6 +22,7 @@
 #include <tuple>
 #include <cfenv>
 #include <memory>
+#include <cmath>
 //This pragma allows for divide by zero & overflow testing
 #pragma STDC FENV_ACCESS ON
 
@@ -43,6 +44,23 @@ namespace simpleTools
                 return leftY;
             }
 
+            std::tuple< bool, Y> scanResult = scanVector( x );
+            if( std::get<0>(scanResult))
+            {
+                return std::get<1>(scanResult);
+            }
+
+            //if rightX <  x, then the interpolation point is to the right of the table.
+            if( x > rightX ) {
+                return intrpData->rbegin()->second;
+            }
+
+            //find the closest X to x and return that Y
+            if( abs( x - leftX) < abs( x - rightX) )
+            {
+                return leftY;
+            }
+            return rightY;
         }
 
         //given interpolation point, x, compute it's corresponding y value
