@@ -31,7 +31,7 @@ namespace simpleTools
     template <class X, class Y>
     class interpolation {
     public:
-        explicit interpolation( std::shared_ptr< std::vector< std::pair< X, Y > > >a ): intrpData( a ) {};
+        explicit interpolation( const std::shared_ptr< std::vector< std::pair< X, Y > > >a ): intrpData( a ) {};
 
         //The simplest interpolation is to return the closest Y to a given X.
         Y nearestY( X x )

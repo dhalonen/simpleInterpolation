@@ -20,8 +20,6 @@
  */
 #define CATCH_CONFIG_MAIN
 #include <vector>
-#include <tuple>
-#include <memory>
 
 /* Unit Test Framework: https://github.com/philsquared/Catch, release v1.8.2 */
 #include "catch.hpp"
