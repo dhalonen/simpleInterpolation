@@ -90,18 +90,37 @@ TEST_CASE( "Nearest test" )
                             {5.3,  1.9}
                     }));
     simpleTools::interpolation <double, double> nearDataIntrp( nearData  );
-    REQUIRE( nearDataIntrp.nearestY( 0.75 ) == Approx( 1.0 ).epsilon(0.01) );
-    REQUIRE( nearDataIntrp.nearestY( 6 ) == Approx( 1.9 ).epsilon(0.01) );
+    std::tuple<simpleTools::InterpolationResultType, double> result;
+    result = nearDataIntrp.nearestY( 0.75 );
+    REQUIRE( std::get<0>(result) == simpleTools::InterpolationResultType::lessThanData );
+    REQUIRE( std::get<1>(result) == Approx( 1.0 ).epsilon(0.01) );
 
-    REQUIRE( nearDataIntrp.nearestY( 2.749 ) == Approx( 1.3 ).epsilon(0.01) );
-    REQUIRE( nearDataIntrp.nearestY( 2.750 ) == Approx( 2.0 ).epsilon(0.01) );
-    REQUIRE( nearDataIntrp.nearestY( 2.751 ) == Approx( 2.0 ).epsilon(0.01) );
+    result = nearDataIntrp.nearestY( 6 );
+    REQUIRE( std::get<0>(result) == simpleTools::InterpolationResultType::greaterThanData );
+    REQUIRE( std::get<1>(result) == Approx( 1.9 ).epsilon(0.01) );
 
-    std::shared_ptr< std::vector< std::pair< double, double > > > emptyData( new std::vector< std::pair< double, double > > ({}));   //empty vector check
+    result = nearDataIntrp.nearestY( 2.749 );
+    REQUIRE( std::get<0>(result) == simpleTools::InterpolationResultType::OK );
+    REQUIRE( std::get<1>(result) == Approx( 1.3 ).epsilon(0.01) );
+
+    result = nearDataIntrp.nearestY( 2.750 );
+    REQUIRE( std::get<0>(result) == simpleTools::InterpolationResultType::OK );
+    REQUIRE( std::get<1>(result) == Approx( 2.0 ).epsilon(0.01) );
+
+    result = nearDataIntrp.nearestY( 2.751 );
+    REQUIRE( std::get<0>(result) == simpleTools::InterpolationResultType::OK );
+    REQUIRE( std::get<1>(result) == Approx( 2.0 ).epsilon(0.01) );
+
+    std::shared_ptr< std::vector< std::pair< double, double > > > emptyData( new std::vector< std::pair< double, double > >
+            ({}));   //empty vector check
     simpleTools::interpolation <double, double> emptyIntrp( emptyData );
-    REQUIRE( std::isnan( emptyIntrp.nearestY( 100 )));
+    result = emptyIntrp.nearestY( 100 );
+    REQUIRE( std::get<0>(result) == simpleTools::InterpolationResultType::dataIncomplete );
+    REQUIRE( std::get<1>(result) == Approx( 0.0 ).epsilon(0.01) );
 
     emptyData->push_back( {1.0, 1.0} );    //cannot work with 1 pair of data
     simpleTools::interpolation <double, double> singlePair( emptyIntrp );
-    REQUIRE(std::isnan( singlePair.nearestY( 100 )));
+    result = emptyIntrp.nearestY( 100 );
+    REQUIRE( std::get<0>(result) == simpleTools::InterpolationResultType::dataIncomplete );
+    REQUIRE( std::get<1>(result) == Approx( 0.0 ).epsilon(0.01) );
 }

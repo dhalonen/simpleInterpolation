@@ -23,50 +23,62 @@
 #include <cfenv>
 #include <memory>
 #include <cmath>
+#include <tuple>
+
 //This pragma allows for divide by zero & overflow testing
 #pragma STDC FENV_ACCESS ON
 
 namespace simpleTools
 {
+    enum class InterpolationResultType {
+        OK,
+        lessThanData,
+        greaterThanData,
+//        dataUnsorted,
+        dataIncomplete
+    };
+
     template <class X, class Y>
     class interpolation {
     public:
         explicit interpolation( const std::shared_ptr< std::vector< std::pair< X, Y > > >a ): intrpData( a ) {};
 
         //The simplest interpolation is to return the closest Y to a given X.
-        Y nearestY( X x )
+        std::tuple<InterpolationResultType, Y> nearestY( X x )
         {
-            if( preflightFailed() ) return nan( "NAN" );
+            InterpolationResultType preflightResult = preflightFailed();
+            if( preflightResult != InterpolationResultType::OK ) return {preflightResult, 0};
 
             //if leftX > x, then leftX is the closest
             if( leftX > x )
             {
-                return leftY;
+                return {InterpolationResultType::lessThanData, leftY};
             }
 
             std::tuple< bool, Y> scanResult = scanVector( x );
             if( std::get<0>(scanResult))
             {
-                return std::get<1>(scanResult);
+                return {InterpolationResultType::OK, std::get<1>(scanResult)};
             }
 
             //if rightX <  x, then the interpolation point is to the right of the table.
             if( x > rightX ) {
-                return intrpData->rbegin()->second;
+                return {InterpolationResultType::greaterThanData, intrpData->rbegin()->second};
             }
 
             //find the closest X to x and return that Y
             if( abs( x - leftX) < abs( x - rightX) )
             {
-                return leftY;
+                return {InterpolationResultType::OK, leftY};
             }
-            return rightY;
+            return {InterpolationResultType::OK, rightY};
         }
 
         //given interpolation point, x, compute it's corresponding y value
         Y getY( X x )
         {
-            if( preflightFailed() ) return nan( "NAN" );
+            InterpolationResultType preflightResult = preflightFailed();
+            if( preflightResult != InterpolationResultType::OK ) return nan( "NAN" );
 
             //if leftX > x, then the interpolation point is to the left of the table.
             //compute y = mx + b, using the 1st two pairs to determine that equation
@@ -106,20 +118,19 @@ namespace simpleTools
         Y rightX, rightY; //next adjacent data point
         typename std::vector< std::pair< X, Y >>::iterator head;
 
-        bool preflightFailed()
+        InterpolationResultType preflightFailed()
         {
-            //If less then 2 pairs, then nothing can be done.
-            if( intrpData->size() < 2 ) return true;
-
             head = intrpData->begin();
-            auto end = intrpData->end();
-            if( head == end ) return true;  //empty vector
+            if( head == intrpData->end() ) return InterpolationResultType::dataIncomplete;  //empty vector
+
+            //If less then 2 pairs, then nothing can be done.
+            if( intrpData->size() < 2 ) return InterpolationResultType::dataIncomplete;
 
             head = intrpData->begin();
             leftX = head->first;                    //start from left side of graph or top of table
             leftY = head->second;
 
-            return false;
+            return InterpolationResultType::OK;
         }
 
         std::tuple< bool, Y> scanVector( X x )
