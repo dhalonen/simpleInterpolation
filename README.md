@@ -14,3 +14,5 @@ Build instructions:<p>
 Successfully built and tested on Mac OSX, Raspberry Pi
 
 Elaboration: https://davidhalonen.wordpress.com/2017/03/17/simple-tools-interpolation/
+
+Alternatively, a "nearest neighbor" implementation has been added. Instead of a linear interpolation, it returns the 'y' value of the closest 'x' to the requested point. This is a very simple "interpolation".
