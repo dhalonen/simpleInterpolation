@@ -28,76 +28,80 @@
 //This pragma allows for divide by zero & overflow testing
 #pragma STDC FENV_ACCESS ON
 
-namespace simpleTools
-{
+namespace simpleTools {
     enum class InterpolationResultType {
         OK,
         lessThanData,
         greaterThanData,
-//        dataUnsorted,
+        exactMatch,
+        dataUnsorted,
         dataIncomplete
     };
 
-    template <class X, class Y>
+    template<class X, class Y>
     class interpolation {
     public:
-        explicit interpolation( const std::shared_ptr< std::vector< std::pair< X, Y > > >a ): intrpData( a ) {};
+        explicit interpolation(const std::shared_ptr<std::vector<std::pair<X, Y> > > a) : intrpData(a) {};
 
         //The simplest interpolation is to return the closest Y to a given X.
-        std::tuple<InterpolationResultType, Y> nearestY( X x )
-        {
+        std::tuple<InterpolationResultType, Y> nearestY(X x) {
             InterpolationResultType preflightResult = preflightFailed();
-            if( preflightResult != InterpolationResultType::OK ) return {preflightResult, 0};
+            if (preflightResult != InterpolationResultType::OK) return {preflightResult, 0};
 
             //if leftX > x, then leftX is the closest
-            if( leftX > x )
-            {
+            if (leftX > x) {
                 return {InterpolationResultType::lessThanData, leftY};
             }
 
-            std::tuple< bool, Y> scanResult = scanVector( x );
-            if( std::get<0>(scanResult))
-            {
+            std::tuple<InterpolationResultType, Y> scanResult = scanVector(x);
+            if (std::get<0>(scanResult) == InterpolationResultType::exactMatch) {
                 return {InterpolationResultType::OK, std::get<1>(scanResult)};
             }
 
+            if (std::get<0>(scanResult) == InterpolationResultType::dataUnsorted) {
+                return {InterpolationResultType::dataUnsorted, 0};
+            }
+
             //if rightX <  x, then the interpolation point is to the right of the table.
-            if( x > rightX ) {
+            if (x > rightX) {
                 return {InterpolationResultType::greaterThanData, intrpData->rbegin()->second};
             }
 
             //find the closest X to x and return that Y
-            if( abs( x - leftX) < abs( x - rightX) )
-            {
+            if (abs(x - leftX) < abs(x - rightX)) {
                 return {InterpolationResultType::OK, leftY};
             }
             return {InterpolationResultType::OK, rightY};
         }
 
         //given interpolation point, x, compute it's corresponding y value
-        Y getY( X x )
-        {
+        Y getY(X x) {
             InterpolationResultType preflightResult = preflightFailed();
-            if( preflightResult != InterpolationResultType::OK ) return nan( "NAN" );
+            if (preflightResult != InterpolationResultType::OK) return nan("NAN");
 
             //if leftX > x, then the interpolation point is to the left of the table.
             //compute y = mx + b, using the 1st two pairs to determine that equation
-            if( leftX > x ){
+            if (leftX > x) {
                 ++head;
                 rightX = head->first;
                 rightY = head->second;
-                return interpolateOnSegment( x );
+                return interpolateOnSegment(x);
             }
 
-            std::tuple< bool, Y> scanResult = scanVector( x );
-            if( std::get<0>(scanResult))
-            {
+            std::tuple<InterpolationResultType, Y> scanResult = scanVector(x);
+            if (std::get<0>(scanResult) == InterpolationResultType::exactMatch) {
+//                return {InterpolationResultType::OK, std::get<1>(scanResult)};
                 return std::get<1>(scanResult);
+            }
+
+            if (std::get<0>(scanResult) == InterpolationResultType::dataUnsorted) {
+//                return {InterpolationResultType::dataUnsorted, 0};
+                return 0;
             }
 
             //if rightX <  x, then the interpolation point is to the right of the table.
             //compute y = mx + b, using the last two pairs to determine that equation
-            if( x > rightX ) {
+            if (x > rightX) {
                 //perform a reverse iteration.
                 auto rhead = intrpData->rbegin();
                 rightX = rhead->first;
@@ -105,26 +109,25 @@ namespace simpleTools
                 ++rhead;
                 leftX = rhead->first;
                 leftY = rhead->second;
-                return interpolateOnSegment( x );
+                return interpolateOnSegment(x);
             }
 
             //simply perform linear interpolation between two points
-            return interpolate( x );
+            return interpolate(x);
         }
 
     private:
-        std::shared_ptr< std::vector< std::pair< X, Y > > > intrpData;
+        std::shared_ptr<std::vector<std::pair<X, Y> > > intrpData;
         X leftX, leftY; //current left data point
         Y rightX, rightY; //next adjacent data point
-        typename std::vector< std::pair< X, Y >>::iterator head;
+        typename std::vector<std::pair<X, Y >>::iterator head;
 
-        InterpolationResultType preflightFailed()
-        {
+        InterpolationResultType preflightFailed() {
             head = intrpData->begin();
-            if( head == intrpData->end() ) return InterpolationResultType::dataIncomplete;  //empty vector
+            if (head == intrpData->end()) return InterpolationResultType::dataIncomplete;  //empty vector
 
             //If less then 2 pairs, then nothing can be done.
-            if( intrpData->size() < 2 ) return InterpolationResultType::dataIncomplete;
+            if (intrpData->size() < 2) return InterpolationResultType::dataIncomplete;
 
             head = intrpData->begin();
             leftX = head->first;                    //start from left side of graph or top of table
@@ -133,63 +136,71 @@ namespace simpleTools
             return InterpolationResultType::OK;
         }
 
-        std::tuple< bool, Y> scanVector( X x )
-        {
+        std::tuple<InterpolationResultType, Y> scanVector(X x) {
+            auto currX = head->first;   //current X under consideration
             auto next = ++head;
             rightX = next->first;
             rightY = next->second;
 
             //scan pairs to determine where the desired point lies between
-            for( std::pair< X, Y >&item : *intrpData ){
-                if( x == leftX ) return std::make_tuple( true, leftY );
-                if( x == rightX ) return std::make_tuple( true, rightY );
+            auto foundRhs = false;  //need to "peek" ahead by one to ensure sorted data
+            for (std::pair<X, Y> &item : *intrpData) {
+                if (item.first < currX) {
+                    return std::make_tuple(InterpolationResultType::dataUnsorted, 0);
+                } else {
+                    currX = item.first;
+                }
+                if (x == leftX) return std::make_tuple(InterpolationResultType::exactMatch, leftY);
+                if (x == rightX) return std::make_tuple(InterpolationResultType::exactMatch, rightY);
 
-                if( item.first > x ){    //we have the rhs
-                    rightX = item.first;
-                    rightY = item.second;
-                    break;
+                if (item.first > x) {    //we have the rhs
+                    //This flag looks ahead by one item. If the 'dataUnsorted' hasn't been tripped, exit the loop.
+                    if (foundRhs) {
+                        break;
+                    } else {
+                        rightX = item.first;
+                        rightY = item.second;
+                        foundRhs = true;
+                    }
                 } else {
                     leftX = item.first;
                     leftY = item.second;
                 }
             }
-            return std::make_tuple( false, nan( "NAN" ) );
+            return std::make_tuple(InterpolationResultType::OK, 0); //just return OK, caller will examine state
         }
 
-        Y interpolate( X x)
-        {
+        Y interpolate(X x) {
             Y slope = computeSlope();
-            if( std::isnan( slope )) return slope;
+            if (std::isnan(slope)) return slope;
 
             std::feclearexcept(FE_ALL_EXCEPT);
             Y result = leftY + (x - leftX) * slope;
-            if(std::fetestexcept(FE_OVERFLOW)) return nan( "NAN" ); 
+            if (std::fetestexcept(FE_OVERFLOW)) return nan("NAN");
 
-            return result; 
+            return result;
         };
 
-        Y interpolateOnSegment( X x)
-        {   // y = mx + b
+        Y interpolateOnSegment(X x) {   // y = mx + b
             Y m = computeSlope();
-            if( std::isnan( m )) return m;
+            if (std::isnan(m)) return m;
             Y b = leftY - m * leftX;
 
             std::feclearexcept(FE_ALL_EXCEPT);
             Y result = m * x + b;
-            if(std::fetestexcept(FE_OVERFLOW)) return nan( "NAN" ); 
+            if (std::fetestexcept(FE_OVERFLOW)) return nan("NAN");
 
-            return result; 
+            return result;
         };
 
-        Y computeSlope()
-        {
+        Y computeSlope() {
             Y denominator = rightX - leftX;
 
             std::feclearexcept(FE_ALL_EXCEPT);
-            Y result = ( rightY - leftY ) / denominator;
-            if(std::fetestexcept(FE_DIVBYZERO)) return nan( "NAN" ); 
+            Y result = (rightY - leftY) / denominator;
+            if (std::fetestexcept(FE_DIVBYZERO)) return nan("NAN");
 
-            return result; 
+            return result;
         }
     };
 }
