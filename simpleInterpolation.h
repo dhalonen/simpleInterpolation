@@ -35,7 +35,8 @@ namespace simpleTools {
         greaterThanData,
         exactMatch,
         dataUnsorted,
-        dataIncomplete
+        dataIncomplete,
+        divideByZero
     };
 
     template<class X, class Y>
@@ -75,9 +76,9 @@ namespace simpleTools {
         }
 
         //given interpolation point, x, compute it's corresponding y value
-        Y getY(X x) {
+        std::tuple<InterpolationResultType, Y> getY(X x) {
             InterpolationResultType preflightResult = preflightFailed();
-            if (preflightResult != InterpolationResultType::OK) return nan("NAN");
+            if (preflightResult != InterpolationResultType::OK) return {preflightResult, 0};
 
             //if leftX > x, then the interpolation point is to the left of the table.
             //compute y = mx + b, using the 1st two pairs to determine that equation
@@ -90,13 +91,11 @@ namespace simpleTools {
 
             std::tuple<InterpolationResultType, Y> scanResult = scanVector(x);
             if (std::get<0>(scanResult) == InterpolationResultType::exactMatch) {
-//                return {InterpolationResultType::OK, std::get<1>(scanResult)};
-                return std::get<1>(scanResult);
+                return {InterpolationResultType::OK, std::get<1>(scanResult)};
             }
 
             if (std::get<0>(scanResult) == InterpolationResultType::dataUnsorted) {
-//                return {InterpolationResultType::dataUnsorted, 0};
-                return 0;
+                return {InterpolationResultType::dataUnsorted, 0};
             }
 
             //if rightX <  x, then the interpolation point is to the right of the table.
@@ -170,37 +169,36 @@ namespace simpleTools {
             return std::make_tuple(InterpolationResultType::OK, 0); //just return OK, caller will examine state
         }
 
-        Y interpolate(X x) {
-            Y slope = computeSlope();
-            if (std::isnan(slope)) return slope;
+        std::tuple<InterpolationResultType, Y> interpolate(X x) {
+            std::tuple<simpleTools::InterpolationResultType, double> result = computeSlope();
+            if (std::get<0>(result) == InterpolationResultType::divideByZero) {
+                return result;
+            }
 
-            std::feclearexcept(FE_ALL_EXCEPT);
-            Y result = leftY + (x - leftX) * slope;
-            if (std::fetestexcept(FE_OVERFLOW)) return nan("NAN");
+            Y slope = std::get<1>(result);
 
-            return result;
+            return std::make_tuple(InterpolationResultType::OK, leftY + (x - leftX) * slope);
         };
 
-        Y interpolateOnSegment(X x) {   // y = mx + b
-            Y m = computeSlope();
-            if (std::isnan(m)) return m;
+        std::tuple<InterpolationResultType, Y> interpolateOnSegment(X x) {   // y = mx + b
+            std::tuple<simpleTools::InterpolationResultType, double> result = computeSlope();
+            if (std::get<0>(result) == InterpolationResultType::divideByZero) {
+                return result;
+            }
+            Y m = std::get<1>(result);
             Y b = leftY - m * leftX;
 
-            std::feclearexcept(FE_ALL_EXCEPT);
-            Y result = m * x + b;
-            if (std::fetestexcept(FE_OVERFLOW)) return nan("NAN");
-
-            return result;
+            return std::make_tuple(InterpolationResultType::OK, m * x + b);
         };
 
-        Y computeSlope() {
+        std::tuple<InterpolationResultType, Y> computeSlope() {
             Y denominator = rightX - leftX;
 
-            std::feclearexcept(FE_ALL_EXCEPT);
-            Y result = (rightY - leftY) / denominator;
-            if (std::fetestexcept(FE_DIVBYZERO)) return nan("NAN");
+            if (abs(denominator) == 0) {
+                return {InterpolationResultType::divideByZero, 0};
+            }
 
-            return result;
+            return std::make_tuple(InterpolationResultType::OK, (rightY - leftY) / denominator);
         }
     };
 }
