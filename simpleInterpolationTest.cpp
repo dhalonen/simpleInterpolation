@@ -28,17 +28,20 @@
 #include "simpleInterpolation.h"
 
 TEST_CASE("First test") {
-    std::shared_ptr<std::vector<std::pair<double, double> > > graphData(new std::vector<std::pair<double, double> >
-                                                                                (
-                                                                                        {
-                                                                                                {1.0,  1.0},
-                                                                                                {2.5,  1.3},
-                                                                                                {3.0,  2.0},
-                                                                                                {3.75, 0.5},
-                                                                                                {4.1,  2.25},
-                                                                                                {5.0,  1.75},
-                                                                                                {5.3,  1.9}
-                                                                                        }));
+    std::shared_ptr<std::vector<std::pair<double, double> > > graphData
+    (new std::vector<std::pair<double, double> >
+        (
+        {
+                {1.0,  1.0},
+                {2.5,  1.3},
+                {3.0,  2.0},
+                {3.75, 0.5},
+                {4.1,  2.25},
+                {5.0,  1.75},
+                {5.3,  1.9}
+            }
+        )
+    );
     simpleTools::interpolation<double, double> graphDataIntrp(graphData);
     std::tuple<simpleTools::InterpolationResultType, double> result;
 
@@ -82,36 +85,6 @@ TEST_CASE("First test") {
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::OK);
     REQUIRE(std::get<1>(result) == Approx(2.0).epsilon(0.01));
 
-    std::shared_ptr<std::vector<std::pair<long double, long double> > > longDouble(
-            new std::vector<std::pair<long double, long double> >({{1.0, 9.1},
-                                                                   {2.0, 8.2},
-                                                                   {3.0, 7.3},
-                                                                   {4.0, 6.4},
-                                                                   {5.0, 5.5},
-                                                                   {6.0, 4.6},
-                                                                   {7.0, 3.7},
-                                                                   {8.0, 2.8},
-                                                                   {9.0, 1.9}}));
-    simpleTools::interpolation<long double, long double> ldIntrp(longDouble);
-    result = ldIntrp.getY(1.5);
-    REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::OK);
-    REQUIRE(std::get<1>(result) == Approx(8.65));
-
-    std::shared_ptr<std::vector<std::pair<float, float> > > floatData(new std::vector<std::pair<float, float> >(
-            {{1.0, 9.1},
-             {2.0, 8.2},
-             {3.0, 7.3},
-             {4.0, 6.4},
-             {5.0, 5.5},
-             {6.0, 4.6},
-             {7.0, 3.7},
-             {8.0, 2.8},
-             {9.0, 1.9}}));
-    simpleTools::interpolation<float, float> floatIntrp(floatData);
-    result = floatIntrp.getY(1.5);
-    REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::OK);
-    REQUIRE(std::get<1>(result) == Approx(8.65).epsilon(0.01));
-
     std::shared_ptr<std::vector<std::pair<double, double> > > emptyData(
             new std::vector<std::pair<double, double> >({}));   //empty vector check
     simpleTools::interpolation<double, double> emptyIntrp(emptyData);
@@ -134,13 +107,64 @@ TEST_CASE("First test") {
     REQUIRE(std::get<1>(result) == Approx(0.0).epsilon(0.01));
 }
 
+TEST_CASE("Long double test") {
+    std::tuple<simpleTools::InterpolationResultType, long double> result;
+
+    std::shared_ptr<std::vector<std::pair<long double, long double> > > longDouble
+    (
+    new std::vector<std::pair<long double, long double> >(
+    {
+            {1.0, 9.1},
+            {2.0, 8.2},
+            {3.0, 7.3},
+            {4.0, 6.4},
+            {5.0, 5.5},
+            {6.0, 4.6},
+            {7.0, 3.7},
+            {8.0, 2.8},
+            {9.0, 1.9}
+        } )
+    );
+    simpleTools::interpolation<long double, long double> ldIntrp(longDouble);
+    result = ldIntrp.getY((long double) 1.5);
+    REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::OK);
+    REQUIRE(std::get<1>(result) == Approx(8.65));
+}
+
+TEST_CASE("Float test") {
+    std::tuple<simpleTools::InterpolationResultType, float> result;
+
+    std::shared_ptr<std::vector<std::pair<float, float> > > floatData
+    (
+    new std::vector<std::pair<float, float> >(
+     {
+            {1.0, 9.1},
+            {2.0, 8.2},
+            {3.0, 7.3},
+            {4.0, 6.4},
+            {5.0, 5.5},
+            {6.0, 4.6},
+            {7.0, 3.7},
+            {8.0, 2.8},
+            {9.0, 1.9}
+        } )
+    );
+    simpleTools::interpolation<float, float> floatIntrp(floatData);
+    result = floatIntrp.getY(1.5);
+    REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::OK);
+    REQUIRE(std::get<1>(result) == Approx(8.65).epsilon(0.01));
+}
+
 TEST_CASE("Dis-similar test") {
-    std::shared_ptr<std::vector<std::pair<int, double> > > disData(new std::vector<std::pair<int, double> >
-                                                                           ({
-                                                                                    {1, 1.0},
-                                                                                    {3, 2.0},
-                                                                                    {5, 1.75},
-                                                                            }));
+    std::shared_ptr<std::vector<std::pair<int, double> > > disData
+    (
+    new std::vector<std::pair<int, double> > (
+    {
+            {1, 1.0},
+            {3, 2.0},
+            {5, 1.75}
+        } )
+    );
     simpleTools::interpolation<int, double> disDataIntrp(disData);
     std::tuple<simpleTools::InterpolationResultType, double> result;
 
@@ -158,17 +182,19 @@ TEST_CASE("Dis-similar test") {
 }
 
 TEST_CASE("Nearest test") {
-    std::shared_ptr<std::vector<std::pair<double, double> > > nearData(new std::vector<std::pair<double, double> >
-                                                                               (
-                                                                                       {
-                                                                                               {1.0,  1.0},
-                                                                                               {2.5,  1.3},
-                                                                                               {3.0,  2.0},
-                                                                                               {3.75, 0.5},
-                                                                                               {4.1,  2.25},
-                                                                                               {5.0,  1.75},
-                                                                                               {5.3,  1.9}
-                                                                                       }));
+    std::shared_ptr<std::vector<std::pair<double, double> > > nearData
+    (
+    new std::vector<std::pair<double, double> > (
+    {
+            {1.0,  1.0},
+            {2.5,  1.3},
+            {3.0,  2.0},
+            {3.75, 0.5},
+            {4.1,  2.25},
+            {5.0,  1.75},
+            {5.3,  1.9}
+       } )
+    );
     simpleTools::interpolation<double, double> nearDataIntrp(nearData);
     std::tuple<simpleTools::InterpolationResultType, double> result;
     result = nearDataIntrp.nearestY(0.75);
@@ -207,16 +233,18 @@ TEST_CASE("Nearest test") {
 
 
 TEST_CASE("Unsorted data test") {
-    std::shared_ptr<std::vector<std::pair<double, double> > > nearData(new std::vector<std::pair<double, double> >
-                                                                               (
-                                                                                       {
-                                                                                               {1.0,  1.0},
-                                                                                               {2.5,  1.3},
-                                                     /* This is a bad row */                   {5.0,  2.0},
-                                                                                               {3.75, 0.5},
-                                                                                               {4.1,  2.25},
-                                                                                               {5.3,  1.9}
-                                                                                       }));
+    std::shared_ptr<std::vector<std::pair<double, double> > > nearData
+    (
+    new std::vector<std::pair<double, double> > (
+    {
+            {1.0,  1.0},
+            {2.5,  1.3},
+            {5.0,  2.0}, /* This is a bad row */
+            {3.75, 0.5},
+            {4.1,  2.25},
+            {5.3,  1.9}
+        } )
+    );
     simpleTools::interpolation<double, double> nearDataIntrp(nearData);
     std::tuple<simpleTools::InterpolationResultType, double> result;
     result = nearDataIntrp.nearestY(4);

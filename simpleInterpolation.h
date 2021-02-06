@@ -39,7 +39,7 @@ namespace simpleTools {
     template<class X, class Y>
     class interpolation {
     public:
-        explicit interpolation(const std::shared_ptr<std::vector<std::pair<X, Y> > > a) : intrpData(a) {};
+        explicit interpolation(const std::shared_ptr<std::vector<std::pair<X, Y> > > a) : intrpData(a) {}
 
         //The simplest interpolation is to return the closest Y to a given X.
         std::tuple<InterpolationResultType, Y> nearestY(X x) {
@@ -114,9 +114,9 @@ namespace simpleTools {
 
     private:
         std::shared_ptr<std::vector<std::pair<X, Y> > > intrpData;
-        X leftX, leftY; //current left data point
-        Y rightX, rightY; //next adjacent data point
-        typename std::vector<std::pair<X, Y >>::iterator head;
+        X rightX, leftX; //current left data point
+        Y rightY, leftY; //next adjacent data point
+        typename std::vector<std::pair<X, Y > >::iterator head;
 
         InterpolationResultType preflightFailed() {
             head = intrpData->begin();
@@ -167,7 +167,7 @@ namespace simpleTools {
         }
 
         std::tuple<InterpolationResultType, Y> interpolate(X x) {
-            std::tuple<simpleTools::InterpolationResultType, double> result = computeSlope();
+            std::tuple<simpleTools::InterpolationResultType, Y> result = computeSlope();
             if (std::get<0>(result) == InterpolationResultType::divideByZero) {
                 return result;
             }
@@ -175,10 +175,10 @@ namespace simpleTools {
             Y slope = std::get<1>(result);
 
             return std::make_tuple(InterpolationResultType::OK, leftY + (x - leftX) * slope);
-        };
+        }
 
         std::tuple<InterpolationResultType, Y> interpolateOnSegment(X x) {   // y = mx + b
-            std::tuple<simpleTools::InterpolationResultType, double> result = computeSlope();
+            std::tuple<simpleTools::InterpolationResultType, Y> result = computeSlope();
             if (std::get<0>(result) == InterpolationResultType::divideByZero) {
                 return result;
             }
@@ -186,12 +186,12 @@ namespace simpleTools {
             Y b = leftY - m * leftX;
 
             return std::make_tuple(InterpolationResultType::OK, m * x + b);
-        };
+        }
 
         std::tuple<InterpolationResultType, Y> computeSlope() {
             Y denominator = rightX - leftX;
 
-            if (abs(denominator) == 0) {
+            if (abs(denominator) < (Y) 0.0001) {
                 return {InterpolationResultType::divideByZero, 0};
             }
 
