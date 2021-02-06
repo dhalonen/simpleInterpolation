@@ -196,7 +196,7 @@ namespace simpleTools {
         std::tuple<InterpolationResultType, Y> computeSlope() {
             X denominator = rightX - leftX;
 
-            if (static_cast<X> (fabs(denominator)) < static_cast<X> (0.0001)) {
+            if (static_cast<X> (fabs(static_cast<X> (denominator))) < static_cast<X> (0.0001)) {
                 return {InterpolationResultType::divideByZero, 0};
             }
 
