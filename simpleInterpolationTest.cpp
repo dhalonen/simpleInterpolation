@@ -195,7 +195,7 @@ TEST_CASE("Nearest test") {
             {5.3,  1.9}
        } )
     );
-    simpleTools::interpolation<double, double> nearDataIntrp(nearData, 0.01);
+    simpleTools::interpolation<double, double> nearDataIntrp(nearData, 0.1);
     std::tuple<simpleTools::InterpolationResultType, double> result;
     result = nearDataIntrp.nearestY(0.75);
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::lessThanData);
