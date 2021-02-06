@@ -42,7 +42,7 @@ TEST_CASE("First test") {
             }
         )
     );
-    simpleTools::interpolation<double, double> graphDataIntrp(graphData);
+    simpleTools::interpolation<double, double> graphDataIntrp(graphData, 0.1);
     std::tuple<simpleTools::InterpolationResultType, double> result;
 
     result = graphDataIntrp.getY(1.75);
@@ -87,13 +87,13 @@ TEST_CASE("First test") {
 
     std::shared_ptr<std::vector<std::pair<double, double> > > emptyData(
             new std::vector<std::pair<double, double> >({}));   //empty vector check
-    simpleTools::interpolation<double, double> emptyIntrp(emptyData);
+    simpleTools::interpolation<double, double> emptyIntrp(emptyData, 0.1);
     result = emptyIntrp.getY(100);
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::dataIncomplete);
     REQUIRE(std::get<1>(result) == Approx(0.0).epsilon(0.01));
 
     emptyData->push_back({1.0, 1.0});    //cannot work with 1 pair of data
-    simpleTools::interpolation<double, double> singlePair(emptyIntrp);
+    simpleTools::interpolation<double, double> singlePair(emptyData, 0.1);
     result = emptyIntrp.getY(100);
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::dataIncomplete);
     REQUIRE(std::get<1>(result) == Approx(0.0).epsilon(0.01));
@@ -101,7 +101,7 @@ TEST_CASE("First test") {
     std::shared_ptr<std::vector<std::pair<double, double> > > zeroData(new std::vector<std::pair<double, double> >(
             {{0, 0},
              {0, 0}}));   //return nan when divide by zero
-    simpleTools::interpolation<double, double> zeroIntrp(zeroData);
+    simpleTools::interpolation<double, double> zeroIntrp(zeroData, 0.1);
     result = zeroIntrp.getY(100);
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::divideByZero);
     REQUIRE(std::get<1>(result) == Approx(0.0).epsilon(0.01));
@@ -125,7 +125,7 @@ TEST_CASE("Long double test") {
             {9.0, 1.9}
         } )
     );
-    simpleTools::interpolation<long double, long double> ldIntrp(longDouble);
+    simpleTools::interpolation<long double, long double> ldIntrp(longDouble, 0.1);
     result = ldIntrp.getY((long double) 1.5);
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::OK);
     REQUIRE(std::get<1>(result) == Approx(8.65));
@@ -149,7 +149,7 @@ TEST_CASE("Float test") {
             {9.0, 1.9}
         } )
     );
-    simpleTools::interpolation<float, float> floatIntrp(floatData);
+    simpleTools::interpolation<float, float> floatIntrp(floatData, (float) 0.1);
     result = floatIntrp.getY(1.5);
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::OK);
     REQUIRE(std::get<1>(result) == Approx(8.65).epsilon(0.01));
@@ -165,7 +165,7 @@ TEST_CASE("Dis-similar test") {
             {5, 1.75}
         } )
     );
-    simpleTools::interpolation<int, double> disDataIntrp(disData);
+    simpleTools::interpolation<int, double> disDataIntrp(disData, 0);
     std::tuple<simpleTools::InterpolationResultType, double> result;
 
     result = disDataIntrp.getY(2);
@@ -195,7 +195,7 @@ TEST_CASE("Nearest test") {
             {5.3,  1.9}
        } )
     );
-    simpleTools::interpolation<double, double> nearDataIntrp(nearData);
+    simpleTools::interpolation<double, double> nearDataIntrp(nearData, 0.01);
     std::tuple<simpleTools::InterpolationResultType, double> result;
     result = nearDataIntrp.nearestY(0.75);
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::lessThanData);
@@ -219,13 +219,13 @@ TEST_CASE("Nearest test") {
 
     std::shared_ptr<std::vector<std::pair<double, double> > > emptyData(new std::vector<std::pair<double, double> >
                                                                                 ({}));   //empty vector check
-    simpleTools::interpolation<double, double> emptyIntrp(emptyData);
+    simpleTools::interpolation<double, double> emptyIntrp(emptyData, 0.1);
     result = emptyIntrp.nearestY(100);
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::dataIncomplete);
     REQUIRE(std::get<1>(result) == Approx(0.0).epsilon(0.01));
 
     emptyData->push_back({1.0, 1.0});    //cannot work with 1 pair of data
-    simpleTools::interpolation<double, double> singlePair(emptyIntrp);
+    simpleTools::interpolation<double, double> singlePair(emptyData, 0.1);
     result = emptyIntrp.nearestY(100);
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::dataIncomplete);
     REQUIRE(std::get<1>(result) == Approx(0.0).epsilon(0.01));
@@ -245,7 +245,7 @@ TEST_CASE("Unsorted data test") {
             {5.3,  1.9}
         } )
     );
-    simpleTools::interpolation<double, double> nearDataIntrp(nearData);
+    simpleTools::interpolation<double, double> nearDataIntrp(nearData, 0.1);
     std::tuple<simpleTools::InterpolationResultType, double> result;
     result = nearDataIntrp.nearestY(4);
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::dataUnsorted);

@@ -39,7 +39,9 @@ namespace simpleTools {
     template<class X, class Y>
     class interpolation {
     public:
-        explicit interpolation(const std::shared_ptr<std::vector<std::pair<X, Y> > > a) : intrpData(a) {}
+        explicit interpolation(std::shared_ptr<std::vector<std::pair<X, Y> > > const a, X p) :
+            intrpData(a),
+            precision(p) {}
 
         //The simplest interpolation is to return the closest Y to a given X.
         std::tuple<InterpolationResultType, Y> nearestY(X x) {
@@ -66,7 +68,9 @@ namespace simpleTools {
             }
 
             //find the closest X to x and return that Y
-            if (abs(x - leftX) < abs(x - rightX)) {
+            X leftDelta = (abs(x - leftX) / precision);
+            X rightDelta = (abs(x - rightX) / precision);
+            if (int(leftDelta) < int(rightDelta)) {
                 return {InterpolationResultType::OK, leftY};
             }
             return {InterpolationResultType::OK, rightY};
@@ -116,6 +120,7 @@ namespace simpleTools {
         std::shared_ptr<std::vector<std::pair<X, Y> > > intrpData;
         X rightX, leftX; //current left data point
         Y rightY, leftY; //next adjacent data point
+        X precision; //how close is close enough?
         typename std::vector<std::pair<X, Y > >::iterator head;
 
         InterpolationResultType preflightFailed() {
