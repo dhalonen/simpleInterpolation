@@ -68,8 +68,8 @@ namespace simpleTools {
             }
 
             //find the closest X to x and return that Y
-            X leftDelta = (abs(x - leftX) / precision);
-            X rightDelta = (abs(x - rightX) / precision);
+            X leftDelta = (fabs(x - leftX) / precision);
+            X rightDelta = (fabs(x - rightX) / precision);
             if (int(leftDelta) < int(rightDelta)) {
                 return {InterpolationResultType::OK, leftY};
             }
@@ -196,7 +196,7 @@ namespace simpleTools {
         std::tuple<InterpolationResultType, Y> computeSlope() {
             Y denominator = rightX - leftX;
 
-            if (abs(denominator) < (Y) 0.0001) {
+            if (fabs(denominator) < (Y) 0.0001) {
                 return {InterpolationResultType::divideByZero, 0};
             }
 
