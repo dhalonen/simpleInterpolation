@@ -42,7 +42,7 @@ TEST_CASE("First test") {
             }
         )
     );
-    simpleTools::interpolation<double, double> graphDataIntrp(graphData, 0.1);
+    simpleTools::interpolation<double, double> graphDataIntrp(graphData, 0.001);
     std::tuple<simpleTools::InterpolationResultType, double> result;
 
     result = graphDataIntrp.getY(1.75);
@@ -125,7 +125,7 @@ TEST_CASE("Long double test") {
             {9.0, 1.9}
         } )
     );
-    simpleTools::interpolation<long double, long double> ldIntrp(longDouble, 0.1);
+    simpleTools::interpolation<long double, long double> ldIntrp(longDouble, 0.01);
     result = ldIntrp.getY(static_cast<long double> (1.5));
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::OK);
     REQUIRE(std::get<1>(result) == Approx(8.65));
@@ -149,7 +149,7 @@ TEST_CASE("Float test") {
             {9.0, 1.9}
         } )
     );
-    simpleTools::interpolation<float, float> floatIntrp(floatData, static_cast<float> (0.1));
+    simpleTools::interpolation<float, float> floatIntrp(floatData, static_cast<float> (0.01));
     result = floatIntrp.getY(1.5);
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::OK);
     REQUIRE(std::get<1>(result) == Approx(8.65).epsilon(0.01));
@@ -195,7 +195,7 @@ TEST_CASE("Nearest test") {
             {5.3,  1.9}
        } )
     );
-    simpleTools::interpolation<double, double> nearDataIntrp(nearData, 0.1);
+    simpleTools::interpolation<double, double> nearDataIntrp(nearData, 0.01);
     std::tuple<simpleTools::InterpolationResultType, double> result;
     result = nearDataIntrp.nearestY(0.75);
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::lessThanData);
