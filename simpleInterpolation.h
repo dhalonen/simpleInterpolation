@@ -194,13 +194,13 @@ namespace simpleTools {
         }
 
         std::tuple<InterpolationResultType, Y> computeSlope() {
-            Y denominator = rightX - leftX;
+            X denominator = rightX - leftX;
 
-            if (fabs(denominator) < (Y) 0.0001) {
+            if (fabs(denominator) < static_cast<X> (0.0001)) {
                 return {InterpolationResultType::divideByZero, 0};
             }
 
-            return std::make_tuple(InterpolationResultType::OK, (rightY - leftY) / denominator);
+            return std::make_tuple(InterpolationResultType::OK, static_cast<Y> ((rightY - leftY) / denominator));
         }
     };
 }

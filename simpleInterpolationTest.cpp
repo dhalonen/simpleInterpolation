@@ -126,7 +126,7 @@ TEST_CASE("Long double test") {
         } )
     );
     simpleTools::interpolation<long double, long double> ldIntrp(longDouble, 0.1);
-    result = ldIntrp.getY((long double) 1.5);
+    result = ldIntrp.getY(static_cast<long double> (1.5));
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::OK);
     REQUIRE(std::get<1>(result) == Approx(8.65));
 }
@@ -149,7 +149,7 @@ TEST_CASE("Float test") {
             {9.0, 1.9}
         } )
     );
-    simpleTools::interpolation<float, float> floatIntrp(floatData, (float) 0.1);
+    simpleTools::interpolation<float, float> floatIntrp(floatData, static_cast<float> (0.1));
     result = floatIntrp.getY(1.5);
     REQUIRE(std::get<0>(result) == simpleTools::InterpolationResultType::OK);
     REQUIRE(std::get<1>(result) == Approx(8.65).epsilon(0.01));
